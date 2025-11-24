@@ -1,4 +1,4 @@
-package com.filippovich.webtask.db;
+package com.filippovich.webtask.connection;
 
 import java.sql.Connection;
 import java.sql.SQLException;

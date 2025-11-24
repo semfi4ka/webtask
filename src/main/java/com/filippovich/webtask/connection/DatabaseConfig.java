@@ -1,4 +1,4 @@
-package com.filippovich.webtask.db;
+package com.filippovich.webtask.connection;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
