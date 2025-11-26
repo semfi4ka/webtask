@@ -17,12 +17,16 @@ public class DatabaseConfig {
     private static final int MAX_LIFE_TIME = 1800000;
 
     static {
-        HikariConfig config = new HikariConfig();
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver"); // <- обязательно
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException("MySQL JDBC Driver not found", e);
+        }
 
+        HikariConfig config = new HikariConfig();
         config.setJdbcUrl(JDBC_URL);
         config.setUsername(USERNAME);
         config.setPassword(PASSWORD);
-
         config.setMaximumPoolSize(MAXIMUM_POOL_SIZE);
         config.setMinimumIdle(MINIMUM_IDLE);
         config.setConnectionTimeout(CONNECTION_TIME_OUT);
