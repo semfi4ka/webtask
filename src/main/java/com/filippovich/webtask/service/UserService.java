@@ -39,7 +39,7 @@ public class UserService {
     public String loginUser(String email, String password) {
         PasswordEncoder passwordEncoder = new PasswordEncoder();
         String hashedPassword = passwordEncoder.hash(password);
-        Optional<User> userOpt = userDao.findByEmailAndPassword(email, hashedPassword);
+        Optional<User> userOpt = userDao.authentication(email, hashedPassword);
         if (userOpt.isPresent()) {
             return "SUCCESS:" + userOpt.get().getUsername();
         } else {

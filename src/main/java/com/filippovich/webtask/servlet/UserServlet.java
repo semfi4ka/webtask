@@ -59,7 +59,7 @@ public class UserServlet extends HttpServlet {
         String result = userService.loginUser(email, password);
         if (result.startsWith("SUCCESS:")) {
             req.getSession().setAttribute("username", result.substring(8));
-            resp.sendRedirect("welcome.jsp");
+            resp.sendRedirect("WEB-INF/pages/welcome.jsp");
         } else {
             req.setAttribute("message", result);
             req.getRequestDispatcher("WEB-INF/pages/login.jsp").forward(req, resp);

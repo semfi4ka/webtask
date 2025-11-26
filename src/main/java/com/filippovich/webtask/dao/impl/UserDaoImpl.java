@@ -157,7 +157,7 @@ public class UserDaoImpl implements UserDao {
     }
 
     @Override
-    public Optional<User> findByEmailAndPassword(String email, String passwordHash) {
+    public Optional<User> authentication(String email, String passwordHash) {
         String sql = "SELECT * FROM users WHERE email = ? AND password = ?";
 
         try (Connection conn = DatabaseConfig.getDataSource().getConnection();
