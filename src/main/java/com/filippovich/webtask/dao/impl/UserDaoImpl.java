@@ -1,5 +1,6 @@
 package com.filippovich.webtask.dao.impl;
 
+import com.filippovich.webtask.connection.DatabaseConfig;
 import com.filippovich.webtask.dao.UserDao;
 import com.filippovich.webtask.model.User;
 import com.filippovich.webtask.model.UserRole;
@@ -14,8 +15,8 @@ public class UserDaoImpl implements UserDao {
 
     private final DataSource dataSource;
 
-    public UserDaoImpl(DataSource dataSource) {
-        this.dataSource = dataSource;
+    public UserDaoImpl() {
+        this.dataSource = DatabaseConfig.getDataSource();
     }
 
     @Override
@@ -34,7 +35,7 @@ public class UserDaoImpl implements UserDao {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace(); // позже заменю на log4j
+            e.printStackTrace();
         }
 
         return Optional.empty();
@@ -84,10 +85,7 @@ public class UserDaoImpl implements UserDao {
 
     @Override
     public boolean save(User user) {
-        String sql = """
-                INSERT INTO users (username, email, password, role, created_at)
-                VALUES (?, ?, ?, ?, ?)
-                """;
+        String sql = "INSERT INTO users (username, email, password, role, created_at) VALUES (?, ?, ?, ?, ?)";
 
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -120,10 +118,7 @@ public class UserDaoImpl implements UserDao {
 
     @Override
     public boolean update(User user) {
-        String sql = """
-                UPDATE users SET username=?, email=?, password=?, role=? 
-                WHERE id=?
-                """;
+        String sql = "UPDATE users SET username=?, email=?, password=?, role=? WHERE id=?";
 
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -159,6 +154,29 @@ public class UserDaoImpl implements UserDao {
         }
 
         return false;
+    }
+
+    @Override
+    public Optional<User> findByEmailAndPassword(String email, String passwordHash) {
+        String sql = "SELECT * FROM users WHERE email = ? AND password = ?";
+
+        try (Connection conn = DatabaseConfig.getDataSource().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, email);
+            ps.setString(2, passwordHash);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return Optional.of(mapUser(rs));
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return Optional.empty();
     }
 
     private User mapUser(ResultSet rs) throws SQLException {
