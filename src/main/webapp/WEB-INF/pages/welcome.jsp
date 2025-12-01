@@ -61,13 +61,13 @@
         <!-- CLIENT -->
         <c:if test="${currentUser.role == 'CLIENT'}">
             <form action="${pageContext.request.contextPath}/cocktail/add" method="get">
-                <button class="button" type="submit">Предложить коктейль</button>
+                <button class="button" type="submit">Offer a cocktail</button>
             </form>
             <form action="${pageContext.request.contextPath}/logout" method="post">
-                <button class="button danger" type="submit">Выйти</button>
+                <button class="button danger" type="submit">Log out</button>
             </form>
 
-            <h3>Список коктейлей</h3>
+            <h3>Cocktail list</h3>
             <ul class="cocktail-list">
                 <c:forEach var="cocktail" items="${cocktailList}">
                     <li class="cocktail-item">
@@ -81,15 +81,15 @@
         <!-- BARTENDER -->
         <c:if test="${currentUser.role == 'BARTENDER'}">
             <form action="${pageContext.request.contextPath}/cocktail/add" method="get">
-                <button class="button" type="submit">Добавить коктейль</button>
+                <button class="button" type="submit">Add a cocktail</button>
             </form>
             <form action="${pageContext.request.contextPath}/cocktail/approve" method="get">
-                <button class="button" type="submit">Одобрить коктейль</button>
+                <button class="button" type="submit">Approve cocktail</button>
             </form>
             <form action="${pageContext.request.contextPath}/logout" method="post">
-                <button class="button danger" type="submit">Выйти</button>
+                <button class="button danger" type="submit">Log out</button>
             </form>
-            <h3>Список коктейлей</h3>
+            <h3>Cocktail list</h3>
             <ul class="cocktail-list">
                 <c:forEach var="cocktail" items="${cocktailList}">
                     <li class="cocktail-item">
@@ -103,18 +103,18 @@
         <!-- ADMIN -->
         <c:if test="${currentUser.role == 'ADMIN'}">
             <form action="${pageContext.request.contextPath}/cocktail/add" method="get">
-                <button class="button" type="submit">Добавить коктейль</button>
+                <button class="button" type="submit">Add a cocktail</button>
             </form>
             <form action="${pageContext.request.contextPath}/cocktail/approve" method="get">
-                <button class="button" type="submit">Одобрить коктейль</button>
+                <button class="button" type="submit">Approve cocktail</button>
             </form>
             <form action="${pageContext.request.contextPath}/admin/users" method="get">
-                <button class="button" type="submit">Управление пользователями</button>
+                <button class="button" type="submit">User management</button>
             </form>
             <form action="${pageContext.request.contextPath}/logout" method="post">
-                <button class="button danger" type="submit">Выйти</button>
+                <button class="button danger" type="submit">Log out</button>
             </form>
-            <h3>Список коктейлей</h3>
+            <h3>Cocktail list</h3>
             <ul class="cocktail-list">
                 <c:forEach var="cocktail" items="${cocktailList}">
                     <li class="cocktail-item">

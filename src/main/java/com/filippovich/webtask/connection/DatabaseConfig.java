@@ -18,7 +18,7 @@ public class DatabaseConfig {
 
     static {
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver"); // <- обязательно
+            Class.forName("com.mysql.cj.jdbc.Driver");
         } catch (ClassNotFoundException e) {
             throw new RuntimeException("MySQL JDBC Driver not found", e);
         }

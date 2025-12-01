@@ -2,6 +2,7 @@ package com.filippovich.webtask.dao.impl;
 
 import com.filippovich.webtask.connection.DatabaseConfig;
 import com.filippovich.webtask.dao.UserDao;
+import com.filippovich.webtask.exception.DaoException;
 import com.filippovich.webtask.model.User;
 import com.filippovich.webtask.model.UserRole;
 
@@ -26,82 +27,81 @@ public class UserDaoImpl implements UserDao {
     }
 
     @Override
-    public Optional<User> findById(long id) {
+    public Optional<User> findById(long id) throws DaoException {
 
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(SQL_FIND_BY_ID)) {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(SQL_FIND_BY_ID)) {
 
-            ps.setLong(1, id);
+            preparedStatement.setLong(1, id);
 
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return Optional.of(mapUser(rs));
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return Optional.of(mapUser(resultSet));
                 }
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new DaoException(e);
+        }
+        return Optional.empty();
+    }
+
+    @Override
+    public Optional<User> findByEmail(String email) throws DaoException {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(SQL_FIND_BY_EMAIL)) {
+
+            preparedStatement.setString(1, email);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return Optional.of(mapUser(resultSet));
+                }
+            }
+
+        } catch (SQLException e) {
+            throw new DaoException(e);
         }
 
         return Optional.empty();
     }
 
     @Override
-    public Optional<User> findByEmail(String email) {
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(SQL_FIND_BY_EMAIL)) {
-
-            ps.setString(1, email);
-
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return Optional.of(mapUser(rs));
-                }
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return Optional.empty();
-    }
-
-    @Override
-    public List<User> findAll() {
+    public List<User> findAll() throws DaoException {
         List<User> list = new ArrayList<>();
 
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(SQL_FIND_ALL);
-             ResultSet rs = ps.executeQuery()) {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(SQL_FIND_ALL);
+             ResultSet resultSet = preparedStatement.executeQuery()) {
 
-            while (rs.next()) {
-                list.add(mapUser(rs));
+            while (resultSet.next()) {
+                list.add(mapUser(resultSet));
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new DaoException(e);
         }
 
         return list;
     }
 
     @Override
-    public boolean save(User user) {
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(SQL_SAVE, Statement.RETURN_GENERATED_KEYS)) {
+    public boolean save(User user) throws DaoException {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(SQL_SAVE, Statement.RETURN_GENERATED_KEYS)) {
 
-            ps.setString(1, user.getUsername());
-            ps.setString(2, user.getEmail());
-            ps.setString(3, user.getPasswordHash());
-            ps.setString(4, user.getRole().name());
-            ps.setTimestamp(5, Timestamp.valueOf(user.getCreatedAt()));
+            preparedStatement.setString(1, user.getUsername());
+            preparedStatement.setString(2, user.getEmail());
+            preparedStatement.setString(3, user.getPasswordHash());
+            preparedStatement.setString(4, user.getRole().name());
+            preparedStatement.setTimestamp(5, Timestamp.valueOf(user.getCreatedAt()));
 
-            int affectedRows = ps.executeUpdate();
+            int affectedRows = preparedStatement.executeUpdate();
             if (affectedRows == 0) {
                 return false;
             }
 
-            try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
+            try (ResultSet generatedKeys = preparedStatement.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     user.setId(generatedKeys.getLong(1));
                 }
@@ -110,16 +110,14 @@ public class UserDaoImpl implements UserDao {
             return true;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new DaoException(e);
         }
-
-        return false;
     }
 
     @Override
-    public boolean update(User user) {
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement preparedStatement = conn.prepareStatement(SQL_UPDATE)) {
+    public boolean update(User user) throws DaoException {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(SQL_UPDATE)) {
 
             preparedStatement.setString(1, user.getUsername());
             preparedStatement.setString(2, user.getEmail());
@@ -130,57 +128,53 @@ public class UserDaoImpl implements UserDao {
             return preparedStatement.executeUpdate() > 0;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new DaoException(e);
         }
-
-        return false;
     }
 
     @Override
-    public boolean delete(long id) {
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(SQL_DELETE)) {
+    public boolean delete(long id) throws DaoException {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(SQL_DELETE)) {
 
-            ps.setLong(1, id);
+            preparedStatement.setLong(1, id);
 
-            return ps.executeUpdate() > 0;
+            return preparedStatement.executeUpdate() > 0;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new DaoException(e);
         }
-
-        return false;
     }
 
     @Override
-    public Optional<User> authentication(String email, String passwordHash) {
-        try (Connection conn = DatabaseConfig.getDataSource().getConnection();
-             PreparedStatement ps = conn.prepareStatement(SQL_AUTHENTICATION)) {
+    public Optional<User> authentication(String email, String passwordHash) throws DaoException {
+        try (Connection connection = DatabaseConfig.getDataSource().getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(SQL_AUTHENTICATION)) {
 
-            ps.setString(1, email);
-            ps.setString(2, passwordHash);
+            preparedStatement.setString(1, email);
+            preparedStatement.setString(2, passwordHash);
 
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return Optional.of(mapUser(rs));
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return Optional.of(mapUser(resultSet));
                 }
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new DaoException(e);
         }
 
         return Optional.empty();
     }
 
     private User mapUser(ResultSet rs) throws SQLException {
-        User u = new User();
-        u.setId(rs.getLong("id"));
-        u.setUsername(rs.getString("username"));
-        u.setEmail(rs.getString("email"));
-        u.setPasswordHash(rs.getString("password"));
-        u.setRole(UserRole.valueOf(rs.getString("role")));
-        u.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
-        return u;
+        User user = new User();
+        user.setId(rs.getLong("id"));
+        user.setUsername(rs.getString("username"));
+        user.setEmail(rs.getString("email"));
+        user.setPasswordHash(rs.getString("password"));
+        user.setRole(UserRole.valueOf(rs.getString("role")));
+        user.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
+        return user;
     }
 }

@@ -1,9 +1,10 @@
 package com.filippovich.webtask.servlet;
 
 import com.filippovich.webtask.connection.DatabaseConfig;
+import com.filippovich.webtask.exception.DaoException;
 import com.filippovich.webtask.model.Cocktail;
 import com.filippovich.webtask.model.User;
-import com.filippovich.webtask.service.CocktailService;
+import com.filippovich.webtask.service.impl.CocktailServiceImpl;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -28,12 +29,17 @@ public class WelcomeServlet extends HttpServlet {
         }
 
         req.setAttribute("username", currentUser.getUsername());
-        req.setAttribute("role", currentUser.getRole().name()); // CLIENT, BARTENDER, ADMIN
+        req.setAttribute("role", currentUser.getRole().name());
 
         if (currentUser.getRole() == UserRole.CLIENT) {
             DataSource ds = DatabaseConfig.getDataSource();
-            CocktailService cocktailService = new CocktailService(ds);
-            List<Cocktail> cocktails = cocktailService.getAllCocktails();
+            CocktailServiceImpl cocktailService = new CocktailServiceImpl(ds);
+            List<Cocktail> cocktails = null;
+            try {
+                cocktails = cocktailService.getAllCocktails();
+            } catch (DaoException e) {
+                throw new RuntimeException(e);
+            }
             req.setAttribute("cocktails", cocktails);
         }
 

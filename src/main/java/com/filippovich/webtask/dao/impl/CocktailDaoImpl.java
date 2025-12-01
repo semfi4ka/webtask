@@ -1,6 +1,7 @@
 package com.filippovich.webtask.dao.impl;
 
 import com.filippovich.webtask.dao.CocktailDao;
+import com.filippovich.webtask.exception.DaoException;
 import com.filippovich.webtask.model.Cocktail;
 import com.filippovich.webtask.model.CocktailStatus;
 import com.filippovich.webtask.model.User;
@@ -33,58 +34,58 @@ public class CocktailDaoImpl implements CocktailDao {
     }
 
     @Override
-    public Optional<Cocktail> findById(long id) {
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(SQL_FIND_BY_ID)) {
+    public Optional<Cocktail> findById(long id) throws  DaoException {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(SQL_FIND_BY_ID)) {
 
-            ps.setLong(1, id);
+            preparedStatement.setLong(1, id);
 
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return Optional.of(mapCocktail(rs));
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return Optional.of(mapCocktail(resultSet));
                 }
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new DaoException(e);
         }
 
         return Optional.empty();
     }
 
     @Override
-    public List<Cocktail> findAll() {
+    public List<Cocktail> findAll() throws  DaoException {
         List<Cocktail> list = new ArrayList<>();
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(SQL_FIND_ALL);
-             ResultSet rs = ps.executeQuery()) {
+             ResultSet resultSet = ps.executeQuery()) {
 
-            while (rs.next()) {
-                list.add(mapCocktail(rs));
+            while (resultSet.next()) {
+                list.add(mapCocktail(resultSet));
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new DaoException(e);
         }
 
         return list;
     }
 
     @Override
-    public boolean save(Cocktail cocktail) {
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(SQL_SAVE, Statement.RETURN_GENERATED_KEYS)) {
+    public boolean save(Cocktail cocktail) throws DaoException {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(SQL_SAVE, Statement.RETURN_GENERATED_KEYS)) {
 
-            ps.setString(1, cocktail.getName());
-            ps.setString(2, cocktail.getDescription());
-            ps.setString(3, cocktail.getStatus().name());
-            ps.setLong(4, cocktail.getAuthor().getId());
-            ps.setTimestamp(5, Timestamp.valueOf(cocktail.getCreatedAt()));
+            preparedStatement.setString(1, cocktail.getName());
+            preparedStatement.setString(2, cocktail.getDescription());
+            preparedStatement.setString(3, cocktail.getStatus().name());
+            preparedStatement.setLong(4, cocktail.getAuthor().getId());
+            preparedStatement.setTimestamp(5, Timestamp.valueOf(cocktail.getCreatedAt()));
 
-            int affectedRows = ps.executeUpdate();
+            int affectedRows = preparedStatement.executeUpdate();
             if (affectedRows == 0) return false;
 
-            try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
+            try (ResultSet generatedKeys = preparedStatement.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     cocktail.setId(generatedKeys.getLong(1));
                 }
@@ -93,80 +94,74 @@ public class CocktailDaoImpl implements CocktailDao {
             return true;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new DaoException(e);
         }
-
-        return false;
     }
 
     @Override
-    public boolean update(Cocktail cocktail) {
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(SQL_UPDATE)) {
+    public boolean update(Cocktail cocktail) throws DaoException {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(SQL_UPDATE)) {
 
-            ps.setString(1, cocktail.getName());
-            ps.setString(2, cocktail.getDescription());
-            ps.setString(3, cocktail.getStatus().name());
-            ps.setLong(4, cocktail.getAuthor().getId());
-            ps.setLong(5, cocktail.getId());
+            preparedStatement.setString(1, cocktail.getName());
+            preparedStatement.setString(2, cocktail.getDescription());
+            preparedStatement.setString(3, cocktail.getStatus().name());
+            preparedStatement.setLong(4, cocktail.getAuthor().getId());
+            preparedStatement.setLong(5, cocktail.getId());
 
-            return ps.executeUpdate() > 0;
+            return preparedStatement.executeUpdate() > 0;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new DaoException(e);
         }
-
-        return false;
     }
 
     @Override
-    public boolean delete(long id) {
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(SQL_DELETE)) {
+    public boolean delete(long id) throws DaoException {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(SQL_DELETE)) {
 
-            ps.setLong(1, id);
-            return ps.executeUpdate() > 0;
+            preparedStatement.setLong(1, id);
+            return preparedStatement.executeUpdate() > 0;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new DaoException(e);
         }
-
-        return false;
     }
 
     @Override
-    public List<Cocktail> findByStatus(String status) {
+    public List<Cocktail> findByStatus(String status) throws DaoException {
         List<Cocktail> list = new ArrayList<>();
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(SQL_FIND_BY_STATUS)) {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(SQL_FIND_BY_STATUS)) {
 
-            ps.setString(1, status);
+            preparedStatement.setString(1, status);
 
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    list.add(mapCocktail(rs));
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    list.add(mapCocktail(resultSet));
                 }
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new DaoException(e);
         }
 
         return list;
     }
 
-    private Cocktail mapCocktail(ResultSet rs) throws SQLException {
-        Cocktail c = new Cocktail();
-        c.setId(rs.getLong("id"));
-        c.setName(rs.getString("name"));
-        c.setDescription(rs.getString("description"));
-        c.setStatus(CocktailStatus.valueOf(rs.getString("status")));
+    private Cocktail mapCocktail(ResultSet resultSet) throws SQLException {
+        Cocktail cocktail = new Cocktail();
+        cocktail.setId(resultSet.getLong("id"));
+        cocktail.setName(resultSet.getString("name"));
+        cocktail.setDescription(resultSet.getString("description"));
+        cocktail.setStatus(CocktailStatus.valueOf(resultSet.getString("status")));
 
         User author = new User();
-        author.setId(rs.getLong("author_id"));
-        c.setAuthor(author);
+        author.setId(resultSet.getLong("author_id"));
+        cocktail.setAuthor(author);
 
-        c.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
-        return c;
+        cocktail.setCreatedAt(resultSet.getTimestamp("created_at").toLocalDateTime());
+        return cocktail;
     }
 }
