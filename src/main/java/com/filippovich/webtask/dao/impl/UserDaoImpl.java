@@ -14,17 +14,22 @@ import java.util.Optional;
 public class UserDaoImpl implements UserDao {
 
     private final DataSource dataSource;
-
+    private final String SQL_FIND_BY_ID = "SELECT * FROM users WHERE id = ?";
+    private final String SQL_FIND_BY_EMAIL = "SELECT * FROM users WHERE email = ?";
+    private final String SQL_FIND_ALL = "SELECT * FROM users";
+    private final String SQL_SAVE = "INSERT INTO users (username, email, password, role, created_at) VALUES (?, ?, ?, ?, ?)";
+    private final String SQL_UPDATE = "UPDATE users SET username=?, email=?, password=?, role=? WHERE id=?";
+    private final String SQL_DELETE = "DELETE FROM users WHERE id = ?";
+    private final String SQL_AUTHENTICATION = "SELECT * FROM users WHERE email = ? AND password = ?";
     public UserDaoImpl() {
         this.dataSource = DatabaseConfig.getDataSource();
     }
 
     @Override
     public Optional<User> findById(long id) {
-        String sql = "SELECT * FROM users WHERE id = ?";
 
         try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(SQL_FIND_BY_ID)) {
 
             ps.setLong(1, id);
 
@@ -43,10 +48,8 @@ public class UserDaoImpl implements UserDao {
 
     @Override
     public Optional<User> findByEmail(String email) {
-        String sql = "SELECT * FROM users WHERE email = ?";
-
         try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(SQL_FIND_BY_EMAIL)) {
 
             ps.setString(1, email);
 
@@ -66,10 +69,9 @@ public class UserDaoImpl implements UserDao {
     @Override
     public List<User> findAll() {
         List<User> list = new ArrayList<>();
-        String sql = "SELECT * FROM users";
 
         try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
+             PreparedStatement ps = conn.prepareStatement(SQL_FIND_ALL);
              ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
@@ -85,10 +87,8 @@ public class UserDaoImpl implements UserDao {
 
     @Override
     public boolean save(User user) {
-        String sql = "INSERT INTO users (username, email, password, role, created_at) VALUES (?, ?, ?, ?, ?)";
-
         try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+             PreparedStatement ps = conn.prepareStatement(SQL_SAVE, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setString(1, user.getUsername());
             ps.setString(2, user.getEmail());
@@ -118,18 +118,16 @@ public class UserDaoImpl implements UserDao {
 
     @Override
     public boolean update(User user) {
-        String sql = "UPDATE users SET username=?, email=?, password=?, role=? WHERE id=?";
-
         try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement preparedStatement = conn.prepareStatement(SQL_UPDATE)) {
 
-            ps.setString(1, user.getUsername());
-            ps.setString(2, user.getEmail());
-            ps.setString(3, user.getPasswordHash());
-            ps.setString(4, user.getRole().name());
-            ps.setLong(5, user.getId());
+            preparedStatement.setString(1, user.getUsername());
+            preparedStatement.setString(2, user.getEmail());
+            preparedStatement.setString(3, user.getPasswordHash());
+            preparedStatement.setString(4, user.getRole().name());
+            preparedStatement.setLong(5, user.getId());
 
-            return ps.executeUpdate() > 0;
+            return preparedStatement.executeUpdate() > 0;
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -140,10 +138,8 @@ public class UserDaoImpl implements UserDao {
 
     @Override
     public boolean delete(long id) {
-        String sql = "DELETE FROM users WHERE id = ?";
-
         try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(SQL_DELETE)) {
 
             ps.setLong(1, id);
 
@@ -158,10 +154,8 @@ public class UserDaoImpl implements UserDao {
 
     @Override
     public Optional<User> authentication(String email, String passwordHash) {
-        String sql = "SELECT * FROM users WHERE email = ? AND password = ?";
-
         try (Connection conn = DatabaseConfig.getDataSource().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(SQL_AUTHENTICATION)) {
 
             ps.setString(1, email);
             ps.setString(2, passwordHash);

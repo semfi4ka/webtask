@@ -1,6 +1,7 @@
 package com.filippovich.webtask.servlet;
 
 import com.filippovich.webtask.dao.impl.UserDaoImpl;
+import com.filippovich.webtask.model.User;
 import com.filippovich.webtask.service.UserService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -9,6 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.util.Optional;
 
 @WebServlet({"/register", "/login"})
 public class UserServlet extends HttpServlet {
@@ -17,9 +19,9 @@ public class UserServlet extends HttpServlet {
 
     @Override
     public void init() throws ServletException {
+        // Инициализация UserService с DAO
         userService = new UserService(new UserDaoImpl());
     }
-
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -47,8 +49,12 @@ public class UserServlet extends HttpServlet {
         String email = req.getParameter("email");
         String password = req.getParameter("password");
 
-        String result = userService.registerUser(username, email, password);
-        req.setAttribute("message", result);
+        Optional<User> registeredUser = userService.registerUser(username, email, password);
+        if (registeredUser.isPresent()) {
+            req.setAttribute("message", "Регистрация успешна!");
+        } else {
+            req.setAttribute("message", "Ошибка: Email уже занят или регистрация не удалась");
+        }
         req.getRequestDispatcher("WEB-INF/pages/register.jsp").forward(req, resp);
     }
 
@@ -56,12 +62,13 @@ public class UserServlet extends HttpServlet {
         String email = req.getParameter("email");
         String password = req.getParameter("password");
 
-        String result = userService.loginUser(email, password);
-        if (result.startsWith("SUCCESS:")) {
-            req.getSession().setAttribute("username", result.substring(8));
-            resp.sendRedirect("WEB-INF/pages/welcome.jsp");
+        Optional<User> userOpt = userService.loginUser(email, password);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            req.getSession().setAttribute("currentUser", user);
+            resp.sendRedirect("welcome");
         } else {
-            req.setAttribute("message", result);
+            req.setAttribute("message", "Неверный email или пароль");
             req.getRequestDispatcher("WEB-INF/pages/login.jsp").forward(req, resp);
         }
     }

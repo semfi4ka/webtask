@@ -11,6 +11,12 @@ import java.util.Optional;
 
 public class IngredientDaoImpl implements IngredientDao {
 
+    public static final String SQL_FIND_BY_ID = "SELECT * FROM ingredients WHERE id=?";
+    public static final String SQL_FIND_BY_NAME = "SELECT * FROM ingredients WHERE name=?";
+    public static final String SQL_FIND_ALL = "SELECT * FROM ingredients";
+    public static final String SQL_SAVE = "INSERT INTO ingredients (name, unit) VALUES (?, ?)";
+    public static final String SQL_UPDATE = "UPDATE ingredients SET name=?, unit=? WHERE id=?";
+    public static final String SQL_DELETE = "DELETE FROM ingredients WHERE id=?";
     private final DataSource dataSource;
 
     public IngredientDaoImpl(DataSource dataSource) {
@@ -19,10 +25,8 @@ public class IngredientDaoImpl implements IngredientDao {
 
     @Override
     public Optional<Ingredient> findById(long id) {
-        String sql = "SELECT * FROM ingredients WHERE id=?";
-
         try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(SQL_FIND_BY_ID)) {
 
             ps.setLong(1, id);
 
@@ -41,10 +45,9 @@ public class IngredientDaoImpl implements IngredientDao {
 
     @Override
     public Optional<Ingredient> findByName(String name) {
-        String sql = "SELECT * FROM ingredients WHERE name=?";
 
         try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(SQL_FIND_BY_NAME)) {
 
             ps.setString(1, name);
 
@@ -64,10 +67,8 @@ public class IngredientDaoImpl implements IngredientDao {
     @Override
     public List<Ingredient> findAll() {
         List<Ingredient> list = new ArrayList<>();
-        String sql = "SELECT * FROM ingredients";
-
         try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
+             PreparedStatement ps = conn.prepareStatement(SQL_FIND_ALL);
              ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
@@ -83,10 +84,8 @@ public class IngredientDaoImpl implements IngredientDao {
 
     @Override
     public boolean save(Ingredient ingredient) {
-        String sql = "INSERT INTO ingredients (name, unit) VALUES (?, ?)";
-
         try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+             PreparedStatement ps = conn.prepareStatement(SQL_SAVE, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setString(1, ingredient.getName());
             ps.setString(2, ingredient.getUnit());
@@ -111,10 +110,8 @@ public class IngredientDaoImpl implements IngredientDao {
 
     @Override
     public boolean update(Ingredient ingredient) {
-        String sql = "UPDATE ingredients SET name=?, unit=? WHERE id=?";
-
         try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(SQL_UPDATE)) {
 
             ps.setString(1, ingredient.getName());
             ps.setString(2, ingredient.getUnit());
@@ -131,10 +128,8 @@ public class IngredientDaoImpl implements IngredientDao {
 
     @Override
     public boolean delete(long id) {
-        String sql = "DELETE FROM ingredients WHERE id=?";
-
         try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(SQL_DELETE)) {
 
             ps.setLong(1, id);
             return ps.executeUpdate() > 0;

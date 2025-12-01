@@ -13,6 +13,19 @@ import java.util.Optional;
 
 public class CocktailDaoImpl implements CocktailDao {
 
+    public static final String SQL_FIND_BY_ID = "SELECT * FROM cocktails WHERE id = ?";
+    public static final String SQL_FIND_ALL = "SELECT * FROM cocktails";
+    public static final String SQL_SAVE = """
+            INSERT INTO cocktails (name, description, status, author_id, created_at)
+            VALUES (?, ?, ?, ?, ?)
+            """;
+    public static final String SQL_UPDATE = """
+            UPDATE cocktails
+            SET name=?, description=?, status=?, author_id=?
+            WHERE id=?
+            """;
+    public static final String SQL_DELETE = "DELETE FROM cocktails WHERE id=?";
+    public static final String SQL_FIND_BY_STATUS = "SELECT * FROM cocktails WHERE status=?";
     private final DataSource dataSource;
 
     public CocktailDaoImpl(DataSource dataSource) {
@@ -21,10 +34,8 @@ public class CocktailDaoImpl implements CocktailDao {
 
     @Override
     public Optional<Cocktail> findById(long id) {
-        String sql = "SELECT * FROM cocktails WHERE id = ?";
-
         try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(SQL_FIND_BY_ID)) {
 
             ps.setLong(1, id);
 
@@ -44,10 +55,8 @@ public class CocktailDaoImpl implements CocktailDao {
     @Override
     public List<Cocktail> findAll() {
         List<Cocktail> list = new ArrayList<>();
-        String sql = "SELECT * FROM cocktails";
-
         try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
+             PreparedStatement ps = conn.prepareStatement(SQL_FIND_ALL);
              ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
@@ -63,13 +72,8 @@ public class CocktailDaoImpl implements CocktailDao {
 
     @Override
     public boolean save(Cocktail cocktail) {
-        String sql = """
-                INSERT INTO cocktails (name, description, status, author_id, created_at)
-                VALUES (?, ?, ?, ?, ?)
-                """;
-
         try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+             PreparedStatement ps = conn.prepareStatement(SQL_SAVE, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setString(1, cocktail.getName());
             ps.setString(2, cocktail.getDescription());
@@ -97,14 +101,8 @@ public class CocktailDaoImpl implements CocktailDao {
 
     @Override
     public boolean update(Cocktail cocktail) {
-        String sql = """
-                UPDATE cocktails
-                SET name=?, description=?, status=?, author_id=?
-                WHERE id=?
-                """;
-
         try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(SQL_UPDATE)) {
 
             ps.setString(1, cocktail.getName());
             ps.setString(2, cocktail.getDescription());
@@ -123,10 +121,8 @@ public class CocktailDaoImpl implements CocktailDao {
 
     @Override
     public boolean delete(long id) {
-        String sql = "DELETE FROM cocktails WHERE id=?";
-
         try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(SQL_DELETE)) {
 
             ps.setLong(1, id);
             return ps.executeUpdate() > 0;
@@ -141,10 +137,8 @@ public class CocktailDaoImpl implements CocktailDao {
     @Override
     public List<Cocktail> findByStatus(String status) {
         List<Cocktail> list = new ArrayList<>();
-        String sql = "SELECT * FROM cocktails WHERE status=?";
-
         try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(SQL_FIND_BY_STATUS)) {
 
             ps.setString(1, status);
 

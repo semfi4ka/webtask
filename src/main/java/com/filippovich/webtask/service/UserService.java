@@ -15,10 +15,10 @@ public class UserService {
         this.userDao = userDao;
     }
 
-    public String registerUser(String username, String email, String password) {
+    public Optional<User> registerUser(String username, String email, String password) {
         Optional<User> existingUser = userDao.findByEmail(email);
         if (existingUser.isPresent()) {
-            return "Error: Email address already in use";
+            return Optional.empty(); // Email уже используется
         }
 
         User newUser = new User();
@@ -30,22 +30,18 @@ public class UserService {
 
         boolean saved = userDao.save(newUser);
         if (!saved) {
-            return "Registration error: Failed to save user";
+            return Optional.empty(); // Не удалось сохранить
         }
 
-        return "Registration successful!";
+        return Optional.of(newUser);
     }
 
-    public String loginUser(String email, String password) {
-        PasswordEncoder passwordEncoder = new PasswordEncoder();
-        String hashedPassword = passwordEncoder.hash(password);
-        Optional<User> userOpt = userDao.authentication(email, hashedPassword);
-        if (userOpt.isPresent()) {
-            return "SUCCESS:" + userOpt.get().getUsername();
-        } else {
-            return "Invalid email or password";
-        }
+
+    public Optional<User> loginUser(String email, String password) {
+        String hashedPassword = hashPassword(password);
+        return userDao.authentication(email, hashedPassword);
     }
+
     private String hashPassword(String password) {
         PasswordEncoder passwordEncoder = new PasswordEncoder();
         return passwordEncoder.hash(password);
