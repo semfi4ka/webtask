@@ -20,8 +20,18 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-@WebServlet("/add")
+@WebServlet(CocktailAddServlet.URL_MAPPING)
 public class CocktailAddServlet extends HttpServlet {
+
+    public static final String URL_MAPPING = "/add";
+    public static final String PAGE_ADD = "/WEB-INF/pages/add.jsp";
+    public static final String PAGE_WELCOME = "/welcome";
+    public static final String PARAM_NAME = "name";
+    public static final String PARAM_DESCRIPTION = "description";
+    public static final String PARAM_INGREDIENT_NAME = "ingredientName";
+    public static final String PARAM_INGREDIENT_AMOUNT = "ingredientAmount";
+    public static final String PARAM_INGREDIENT_UNIT = "ingredientUnit";
+    public static final String ATTR_CURRENT_USER = "currentUser";
 
     private CocktailServiceImpl cocktailService;
     private DataSource dataSource;
@@ -34,35 +44,35 @@ public class CocktailAddServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        User currentUser = (User) req.getSession().getAttribute("currentUser");
+        User currentUser = (User) req.getSession().getAttribute(ATTR_CURRENT_USER);
         if (currentUser == null) {
             resp.sendRedirect(req.getContextPath() + "/login");
             return;
         }
-        req.setAttribute("currentUser", currentUser);
-        req.getRequestDispatcher("/WEB-INF/pages/add.jsp").forward(req, resp);
+        req.setAttribute(ATTR_CURRENT_USER, currentUser);
+        req.getRequestDispatcher(PAGE_ADD).forward(req, resp);
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        User currentUser = (User) req.getSession().getAttribute("currentUser");
+        User currentUser = (User) req.getSession().getAttribute(ATTR_CURRENT_USER);
         if (currentUser == null) {
             resp.sendRedirect(req.getContextPath() + "/login");
             return;
         }
 
-        String name = req.getParameter("name");
-        String description = req.getParameter("description");
+        String name = req.getParameter(PARAM_NAME);
+        String description = req.getParameter(PARAM_DESCRIPTION);
 
-        String[] ingredientNames = req.getParameterValues("ingredientName");
-        String[] ingredientAmounts = req.getParameterValues("ingredientAmount");
-        String[] ingredientUnits = req.getParameterValues("ingredientUnit");
+        String[] ingredientNames = req.getParameterValues(PARAM_INGREDIENT_NAME);
+        String[] ingredientAmounts = req.getParameterValues(PARAM_INGREDIENT_AMOUNT);
+        String[] ingredientUnits = req.getParameterValues(PARAM_INGREDIENT_UNIT);
 
         Cocktail cocktail = new Cocktail();
         cocktail.setName(name);
         cocktail.setDescription(description);
         cocktail.setAuthor(currentUser);
-        cocktail.setCreatedAt(LocalDateTime.now());
+        cocktail.setCreatedAt(java.time.LocalDateTime.now());
 
         List<CocktailIngredient> ingredientList = new ArrayList<>();
         if (ingredientNames != null) {
@@ -91,6 +101,6 @@ public class CocktailAddServlet extends HttpServlet {
             throw new ServletException(e);
         }
 
-        resp.sendRedirect(req.getContextPath() + "/welcome");
+        resp.sendRedirect(req.getContextPath() + PAGE_WELCOME);
     }
 }

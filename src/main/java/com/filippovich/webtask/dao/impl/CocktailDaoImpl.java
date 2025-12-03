@@ -15,39 +15,48 @@ import java.util.Optional;
 
 public class CocktailDaoImpl implements CocktailDao {
 
-    public static final String SQL_FIND_BY_ID = "SELECT * FROM cocktails WHERE id = ?";
-    public static final String SQL_FIND_ALL = "SELECT * FROM cocktails";
-    public static final String SQL_SAVE = """
+    private final DataSource dataSource;
+
+    private static final String SQL_FIND_BY_ID = "SELECT * FROM cocktails WHERE id = ?";
+    private static final String SQL_FIND_ALL = "SELECT * FROM cocktails";
+    private static final String SQL_SAVE = """
             INSERT INTO cocktails (name, description, status, author_id, created_at)
             VALUES (?, ?, ?, ?, ?)
             """;
-    public static final String SQL_UPDATE = """
+    private static final String SQL_UPDATE = """
             UPDATE cocktails
             SET name=?, description=?, status=?, author_id=?
             WHERE id=?
             """;
-    public static final String SQL_DELETE = "DELETE FROM cocktails WHERE id=?";
-    public static final String SQL_FIND_BY_STATUS = "SELECT * FROM cocktails WHERE status=?";
-    public static final String SQL_FIND_AUTHOR_NAME_BY_ID = "SELECT username FROM users WHERE id = ?";
-    public static final String SQL_FIND_INGREDIENTS_BY_COCKTAIL_ID = """
-    SELECT i.name, ci.amount, i.unit
-    FROM cocktail_ingredients ci
-    JOIN ingredients i ON ci.ingredient_id = i.id
-    WHERE ci.cocktail_id = ?
-""";
-    private final DataSource dataSource;
+    private static final String SQL_DELETE = "DELETE FROM cocktails WHERE id=?";
+    private static final String SQL_FIND_BY_STATUS = "SELECT * FROM cocktails WHERE status=?";
+    private static final String SQL_FIND_AUTHOR_NAME_BY_ID = "SELECT username FROM users WHERE id = ?";
+    private static final String SQL_FIND_INGREDIENTS_BY_COCKTAIL_ID = """
+            SELECT i.name, ci.amount, i.unit
+            FROM cocktail_ingredients ci
+            JOIN ingredients i ON ci.ingredient_id = i.id
+            WHERE ci.cocktail_id = ?
+            """;
+    private static final String SQL_INSERT_INGREDIENT = """
+            INSERT INTO ingredients (name, unit)
+            VALUES (?, ?)
+            ON DUPLICATE KEY UPDATE id=LAST_INSERT_ID(id)
+            """;
+    private static final String SQL_INSERT_COCKTAIL_INGREDIENT = """
+            INSERT INTO cocktail_ingredients (cocktail_id, ingredient_id, amount)
+            VALUES (?, ?, ?)
+            """;
 
     public CocktailDaoImpl(DataSource dataSource) {
         this.dataSource = dataSource;
     }
 
     @Override
-    public Optional<Cocktail> findById(long id) throws  DaoException {
+    public Optional<Cocktail> findById(long id) throws DaoException {
         try (Connection connection = dataSource.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(SQL_FIND_BY_ID)) {
 
             preparedStatement.setLong(1, id);
-
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (resultSet.next()) {
                     return Optional.of(mapCocktail(resultSet));
@@ -57,26 +66,24 @@ public class CocktailDaoImpl implements CocktailDao {
         } catch (SQLException e) {
             throw new DaoException(e);
         }
-
         return Optional.empty();
     }
 
     @Override
-    public List<Cocktail> findAll() throws  DaoException {
-        List<Cocktail> list = new ArrayList<>();
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(SQL_FIND_ALL);
-             ResultSet resultSet = ps.executeQuery()) {
+    public List<Cocktail> findAll() throws DaoException {
+        List<Cocktail> cocktailList = new ArrayList<>();
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(SQL_FIND_ALL);
+             ResultSet resultSet = preparedStatement.executeQuery()) {
 
             while (resultSet.next()) {
-                list.add(mapCocktail(resultSet));
+                cocktailList.add(mapCocktail(resultSet));
             }
 
         } catch (SQLException e) {
             throw new DaoException(e);
         }
-
-        return list;
+        return cocktailList;
     }
 
     @Override
@@ -91,7 +98,9 @@ public class CocktailDaoImpl implements CocktailDao {
             preparedStatement.setTimestamp(5, Timestamp.valueOf(cocktail.getCreatedAt()));
 
             int affectedRows = preparedStatement.executeUpdate();
-            if (affectedRows == 0) return false;
+            if (affectedRows == 0) {
+                return false;
+            }
 
             try (ResultSet generatedKeys = preparedStatement.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
@@ -139,24 +148,23 @@ public class CocktailDaoImpl implements CocktailDao {
 
     @Override
     public List<Cocktail> findByStatus(String status) throws DaoException {
-        List<Cocktail> list = new ArrayList<>();
+        List<Cocktail> cocktailList = new ArrayList<>();
         try (Connection connection = dataSource.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(SQL_FIND_BY_STATUS)) {
 
             preparedStatement.setString(1, status);
-
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 while (resultSet.next()) {
-                    list.add(mapCocktail(resultSet));
+                    cocktailList.add(mapCocktail(resultSet));
                 }
             }
 
         } catch (SQLException e) {
             throw new DaoException(e);
         }
-
-        return list;
+        return cocktailList;
     }
+
     @Override
     public String findAuthorNameById(long authorId) throws DaoException {
         try (Connection connection = dataSource.getConnection();
@@ -174,19 +182,19 @@ public class CocktailDaoImpl implements CocktailDao {
         }
         return "Unknown";
     }
+
     @Override
     public List<String> findIngredientsByCocktailId(long cocktailId) throws DaoException {
-
         List<String> ingredients = new ArrayList<>();
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement(SQL_FIND_INGREDIENTS_BY_COCKTAIL_ID)) {
+             PreparedStatement preparedStatement = connection.prepareStatement(SQL_FIND_INGREDIENTS_BY_COCKTAIL_ID)) {
 
-            ps.setLong(1, cocktailId);
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    String ingredient = rs.getString("name") + " - " +
-                            rs.getDouble("amount") + " " +
-                            rs.getString("unit");
+            preparedStatement.setLong(1, cocktailId);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    String ingredient = resultSet.getString("name") + " - " +
+                            resultSet.getDouble("amount") + " " +
+                            resultSet.getString("unit");
                     ingredients.add(ingredient);
                 }
             }
@@ -194,7 +202,6 @@ public class CocktailDaoImpl implements CocktailDao {
         } catch (SQLException e) {
             throw new DaoException(e);
         }
-
         return ingredients;
     }
 
@@ -210,29 +217,29 @@ public class CocktailDaoImpl implements CocktailDao {
                     preparedStatement.setLong(4, cocktail.getAuthor().getId());
                     preparedStatement.setTimestamp(5, Timestamp.valueOf(cocktail.getCreatedAt()));
                     preparedStatement.executeUpdate();
-                    try (ResultSet resultSet = preparedStatement.getGeneratedKeys()) {
-                        if (resultSet.next()) {
-                            cocktail.setId(resultSet.getLong(1));
+
+                    try (ResultSet generatedKeys = preparedStatement.getGeneratedKeys()) {
+                        if (generatedKeys.next()) {
+                            cocktail.setId(generatedKeys.getLong(1));
                         }
                     }
                 }
 
                 for (CocktailIngredient cocktailIngredient : ingredients) {
                     long ingredientId;
-                    try (PreparedStatement preparedStatement = connection.prepareStatement(
-                            "INSERT INTO ingredients (name, unit) VALUES (?, ?) ON DUPLICATE KEY UPDATE id=LAST_INSERT_ID(id)",
-                            PreparedStatement.RETURN_GENERATED_KEYS)) {
+
+                    try (PreparedStatement preparedStatement = connection.prepareStatement(SQL_INSERT_INGREDIENT, PreparedStatement.RETURN_GENERATED_KEYS)) {
                         preparedStatement.setString(1, cocktailIngredient.getIngredient().getName());
                         preparedStatement.setString(2, cocktailIngredient.getIngredient().getUnit());
                         preparedStatement.executeUpdate();
-                        try (ResultSet resultSet = preparedStatement.getGeneratedKeys()) {
-                            resultSet.next();
-                            ingredientId = resultSet.getLong(1);
+
+                        try (ResultSet generatedKeys = preparedStatement.getGeneratedKeys()) {
+                            generatedKeys.next();
+                            ingredientId = generatedKeys.getLong(1);
                         }
                     }
 
-                    try (PreparedStatement preparedStatement = connection.prepareStatement(
-                            "INSERT INTO cocktail_ingredients (cocktail_id, ingredient_id, amount) VALUES (?, ?, ?)")) {
+                    try (PreparedStatement preparedStatement = connection.prepareStatement(SQL_INSERT_COCKTAIL_INGREDIENT)) {
                         preparedStatement.setLong(1, cocktail.getId());
                         preparedStatement.setLong(2, ingredientId);
                         preparedStatement.setDouble(3, cocktailIngredient.getAmount());
@@ -242,12 +249,14 @@ public class CocktailDaoImpl implements CocktailDao {
 
                 connection.commit();
                 return true;
+
             } catch (SQLException e) {
                 connection.rollback();
                 throw new DaoException(e);
             } finally {
                 connection.setAutoCommit(true);
             }
+
         } catch (SQLException e) {
             throw new DaoException(e);
         }

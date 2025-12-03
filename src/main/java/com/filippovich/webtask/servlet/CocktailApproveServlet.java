@@ -12,53 +12,57 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import javax.sql.DataSource;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet("/approve")
+@WebServlet(CocktailApproveServlet.URL_MAPPING)
 public class CocktailApproveServlet extends HttpServlet {
+
+    public static final String URL_MAPPING = "/approve";
+    public static final String PAGE_APPROVE = "/WEB-INF/pages/approve.jsp";
+    public static final String ATTR_CURRENT_USER = "currentUser";
+    public static final String ATTR_PENDING_COCKTAILS = "pendingCocktails";
+    public static final String PARAM_ACTION = "action";
+    public static final String PARAM_COCKTAIL_ID = "cocktailId";
+    public static final String PAGE_WELCOME = "/welcome";
 
     private CocktailServiceImpl cocktailService;
 
     @Override
     public void init() {
-        DataSource ds = DatabaseConfig.getDataSource();
-        cocktailService = new CocktailServiceImpl(ds);
+        cocktailService = new CocktailServiceImpl(DatabaseConfig.getDataSource());
     }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        User currentUser = (User) req.getSession().getAttribute("currentUser");
-
+        User currentUser = (User) req.getSession().getAttribute(ATTR_CURRENT_USER);
         if (currentUser == null ||
                 (currentUser.getRole() != UserRole.ADMIN && currentUser.getRole() != UserRole.BARTENDER)) {
-            resp.sendRedirect(req.getContextPath() + "/welcome");
+            resp.sendRedirect(req.getContextPath() + PAGE_WELCOME);
             return;
         }
 
         try {
             List<Cocktail> pendingCocktails = cocktailService.getCocktailsByStatus("MODERATION");
-            req.setAttribute("pendingCocktails", pendingCocktails);
+            req.setAttribute(ATTR_PENDING_COCKTAILS, pendingCocktails);
         } catch (DaoException e) {
             throw new RuntimeException(e);
         }
 
-        req.getRequestDispatcher("/WEB-INF/pages/approve.jsp").forward(req, resp);
+        req.getRequestDispatcher(PAGE_APPROVE).forward(req, resp);
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        User currentUser = (User) req.getSession().getAttribute("currentUser");
-
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        User currentUser = (User) req.getSession().getAttribute(ATTR_CURRENT_USER);
         if (currentUser == null ||
                 (currentUser.getRole() != UserRole.ADMIN && currentUser.getRole() != UserRole.BARTENDER)) {
-            resp.sendRedirect(req.getContextPath() + "/welcome");
+            resp.sendRedirect(req.getContextPath() + PAGE_WELCOME);
             return;
         }
 
-        String action = req.getParameter("action"); // approve or reject
-        long cocktailId = Long.parseLong(req.getParameter("cocktailId"));
+        String action = req.getParameter(PARAM_ACTION);
+        long cocktailId = Long.parseLong(req.getParameter(PARAM_COCKTAIL_ID));
 
         try {
             switch (action) {
@@ -67,7 +71,7 @@ public class CocktailApproveServlet extends HttpServlet {
                         try {
                             cocktail.setStatus(com.filippovich.webtask.model.CocktailStatus.APPROVED);
                             cocktailService.updateCocktail(cocktail);
-                        } catch (com.filippovich.webtask.exception.DaoException e) {
+                        } catch (DaoException e) {
                             throw new RuntimeException(e);
                         }
                     });
@@ -76,11 +80,10 @@ public class CocktailApproveServlet extends HttpServlet {
                     cocktailService.deleteCocktail(cocktailId);
                     break;
             }
-        } catch (com.filippovich.webtask.exception.DaoException e) {
+        } catch (DaoException e) {
             throw new RuntimeException(e);
         }
 
-        resp.sendRedirect(req.getContextPath() + "/approve");
+        resp.sendRedirect(req.getContextPath() + URL_MAPPING);
     }
-
 }

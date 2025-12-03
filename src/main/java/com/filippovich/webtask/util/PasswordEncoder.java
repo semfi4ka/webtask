@@ -24,8 +24,4 @@ public class PasswordEncoder {
             throw new RuntimeException("SHA-256 algorithm not available", e); // заменю на логи!!!
         }
     }
-
-    public boolean matches(String rawPassword, String hashedPassword) {
-        return hash(rawPassword).equals(hashedPassword);
-    }
 }

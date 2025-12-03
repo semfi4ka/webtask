@@ -15,7 +15,7 @@ public class CocktailServiceImpl implements CocktailService {
 
     private final CocktailDaoImpl cocktailDao;
 
-    public CocktailServiceImpl(DataSource dataSource) {   // dao сделаю singleton
+    public CocktailServiceImpl(DataSource dataSource) {
         this.cocktailDao = new CocktailDaoImpl(dataSource);
     }
 
@@ -35,11 +35,6 @@ public class CocktailServiceImpl implements CocktailService {
     }
 
     @Override
-    public boolean addCocktail(Cocktail cocktail) throws DaoException {
-        return cocktailDao.save(cocktail);
-    }
-
-    @Override
     public boolean updateCocktail(Cocktail cocktail) throws DaoException {
         return cocktailDao.update(cocktail);
     }
@@ -51,22 +46,6 @@ public class CocktailServiceImpl implements CocktailService {
         } catch (com.filippovich.webtask.exception.DaoException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    @Override
-    public boolean addCocktailByRole(Cocktail cocktail, String role) throws DaoException {
-        switch (role) {
-            case "CLIENT":
-                cocktail.setStatus(CocktailStatus.MODERATION);
-                break;
-            case "BARTENDER":
-            case "ADMIN":
-                cocktail.setStatus(CocktailStatus.APPROVED);
-                break;
-            default:
-                cocktail.setStatus(CocktailStatus.DRAFT);
-        }
-        return cocktailDao.save(cocktail);
     }
 
     @Override
