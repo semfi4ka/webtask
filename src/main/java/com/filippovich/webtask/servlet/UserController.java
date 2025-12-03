@@ -43,7 +43,7 @@ public class UserController extends HttpServlet {
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException{
         String path = req.getServletPath();
         try {
             if (REGISTER_SERVLET.equals(path)) {
