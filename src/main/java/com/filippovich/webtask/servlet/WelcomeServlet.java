@@ -37,7 +37,7 @@ public class WelcomeServlet extends HttpServlet {
         try {
             cocktails = cocktailService.getCocktailsByStatus("APPROVED");
         } catch (DaoException e) {
-            throw new RuntimeException(e);
+            throw new ServletException(e);
         }
 
         req.setAttribute(ATTR_COCKTAIL_LIST, cocktails);
