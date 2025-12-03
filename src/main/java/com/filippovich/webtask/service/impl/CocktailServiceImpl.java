@@ -43,7 +43,7 @@ public class CocktailServiceImpl implements CocktailService {
     public boolean deleteCocktail(long id) {
         try {
             return cocktailDao.delete(id);
-        } catch (com.filippovich.webtask.exception.DaoException e) {
+        } catch (DaoException e) {
             throw new RuntimeException(e);
         }
     }

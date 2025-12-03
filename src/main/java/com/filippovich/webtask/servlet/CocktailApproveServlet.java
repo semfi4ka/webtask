@@ -3,6 +3,7 @@ package com.filippovich.webtask.servlet;
 import com.filippovich.webtask.connection.DatabaseConfig;
 import com.filippovich.webtask.exception.DaoException;
 import com.filippovich.webtask.model.Cocktail;
+import com.filippovich.webtask.model.CocktailStatus;
 import com.filippovich.webtask.model.User;
 import com.filippovich.webtask.model.UserRole;
 import com.filippovich.webtask.service.impl.CocktailServiceImpl;
@@ -69,7 +70,7 @@ public class CocktailApproveServlet extends HttpServlet {
                 case "approve":
                     cocktailService.getCocktailById(cocktailId).ifPresent(cocktail -> {
                         try {
-                            cocktail.setStatus(com.filippovich.webtask.model.CocktailStatus.APPROVED);
+                            cocktail.setStatus(CocktailStatus.APPROVED);
                             cocktailService.updateCocktail(cocktail);
                         } catch (DaoException e) {
                             throw new RuntimeException(e);
