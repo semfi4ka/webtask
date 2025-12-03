@@ -2,6 +2,7 @@ package com.filippovich.webtask.service.impl;
 
 import com.filippovich.webtask.dao.impl.CocktailDaoImpl;
 import com.filippovich.webtask.exception.DaoException;
+import com.filippovich.webtask.exception.ServiceException;
 import com.filippovich.webtask.model.Cocktail;
 import com.filippovich.webtask.model.CocktailIngredient;
 import com.filippovich.webtask.model.CocktailStatus;
@@ -40,11 +41,11 @@ public class CocktailServiceImpl implements CocktailService {
     }
 
     @Override
-    public boolean deleteCocktail(long id) {
+    public boolean deleteCocktail(long id) throws ServiceException {
         try {
             return cocktailDao.delete(id);
         } catch (DaoException e) {
-            throw new RuntimeException(e);
+            throw new ServiceException(e);
         }
     }
 

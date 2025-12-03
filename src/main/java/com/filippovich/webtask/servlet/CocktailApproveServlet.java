@@ -2,6 +2,7 @@ package com.filippovich.webtask.servlet;
 
 import com.filippovich.webtask.connection.DatabaseConfig;
 import com.filippovich.webtask.exception.DaoException;
+import com.filippovich.webtask.exception.ServiceException;
 import com.filippovich.webtask.model.Cocktail;
 import com.filippovich.webtask.model.CocktailStatus;
 import com.filippovich.webtask.model.User;
@@ -47,14 +48,14 @@ public class CocktailApproveServlet extends HttpServlet {
             List<Cocktail> pendingCocktails = cocktailService.getCocktailsByStatus("MODERATION");
             req.setAttribute(ATTR_PENDING_COCKTAILS, pendingCocktails);
         } catch (DaoException e) {
-            throw new RuntimeException(e);
+            throw new ServletException(e);
         }
 
         req.getRequestDispatcher(PAGE_APPROVE).forward(req, resp);
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
         User currentUser = (User) req.getSession().getAttribute(ATTR_CURRENT_USER);
         if (currentUser == null ||
                 (currentUser.getRole() != UserRole.ADMIN && currentUser.getRole() != UserRole.BARTENDER)) {
@@ -81,8 +82,8 @@ public class CocktailApproveServlet extends HttpServlet {
                     cocktailService.deleteCocktail(cocktailId);
                     break;
             }
-        } catch (DaoException e) {
-            throw new RuntimeException(e);
+        } catch (DaoException | ServiceException e) {
+            throw new ServletException(e);
         }
 
         resp.sendRedirect(req.getContextPath() + URL_MAPPING);

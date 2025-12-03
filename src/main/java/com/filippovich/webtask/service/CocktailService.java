@@ -1,6 +1,7 @@
 package com.filippovich.webtask.service;
 
 import com.filippovich.webtask.exception.DaoException;
+import com.filippovich.webtask.exception.ServiceException;
 import com.filippovich.webtask.model.Cocktail;
 import com.filippovich.webtask.model.CocktailIngredient;
 
@@ -16,7 +17,7 @@ public interface CocktailService {
 
     boolean updateCocktail(Cocktail cocktail) throws DaoException;
 
-    boolean deleteCocktail(long id);
+    boolean deleteCocktail(long id) throws ServiceException;
 
     String getAuthorNameById(long authorId) throws DaoException;
 
