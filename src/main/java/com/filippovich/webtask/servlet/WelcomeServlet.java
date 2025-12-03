@@ -35,11 +35,7 @@ public class WelcomeServlet extends HttpServlet {
 
         List<Cocktail> cocktails;
         try {
-            if (currentUser.getRole() == UserRole.CLIENT) {
-                cocktails = cocktailService.getCocktailsByStatus("APPROVED");
-            } else {
-                cocktails = cocktailService.getAllCocktails();
-            }
+            cocktails = cocktailService.getCocktailsByStatus("APPROVED");
         } catch (DaoException e) {
             throw new RuntimeException(e);
         }

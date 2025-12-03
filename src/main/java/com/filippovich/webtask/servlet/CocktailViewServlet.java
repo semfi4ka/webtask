@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
-@WebServlet("/cocktail/view")
+@WebServlet("/view")
 public class CocktailViewServlet extends HttpServlet {
 
     @Override

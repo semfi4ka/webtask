@@ -3,6 +3,7 @@ package com.filippovich.webtask.service.impl;
 import com.filippovich.webtask.dao.impl.CocktailDaoImpl;
 import com.filippovich.webtask.exception.DaoException;
 import com.filippovich.webtask.model.Cocktail;
+import com.filippovich.webtask.model.CocktailIngredient;
 import com.filippovich.webtask.model.CocktailStatus;
 import com.filippovich.webtask.service.CocktailService;
 
@@ -77,6 +78,23 @@ public class CocktailServiceImpl implements CocktailService {
     public List<String> getIngredientsByCocktailId(long cocktailId) throws DaoException {
         return cocktailDao.findIngredientsByCocktailId(cocktailId);
     }
+
+    @Override
+    public boolean addCocktailWithIngredients(Cocktail cocktail, List<CocktailIngredient> ingredients, String role) throws DaoException {
+        switch (role) {
+            case "CLIENT":
+                cocktail.setStatus(CocktailStatus.MODERATION);
+                break;
+            case "BARTENDER":
+            case "ADMIN":
+                cocktail.setStatus(CocktailStatus.APPROVED);
+                break;
+            default:
+                cocktail.setStatus(CocktailStatus.DRAFT);
+        }
+        return cocktailDao.saveCocktailWithIngredients(cocktail, ingredients);
+    }
+
 
 
 }

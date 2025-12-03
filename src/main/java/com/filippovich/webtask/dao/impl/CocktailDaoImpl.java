@@ -3,6 +3,7 @@ package com.filippovich.webtask.dao.impl;
 import com.filippovich.webtask.dao.CocktailDao;
 import com.filippovich.webtask.exception.DaoException;
 import com.filippovich.webtask.model.Cocktail;
+import com.filippovich.webtask.model.CocktailIngredient;
 import com.filippovich.webtask.model.CocktailStatus;
 import com.filippovich.webtask.model.User;
 
@@ -159,12 +160,12 @@ public class CocktailDaoImpl implements CocktailDao {
     @Override
     public String findAuthorNameById(long authorId) throws DaoException {
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement(SQL_FIND_AUTHOR_NAME_BY_ID)) {
+             PreparedStatement preparedStatement = connection.prepareStatement(SQL_FIND_AUTHOR_NAME_BY_ID)) {
 
-            ps.setLong(1, authorId);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getString("username");
+            preparedStatement.setLong(1, authorId);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getString("username");
                 }
             }
 
@@ -195,6 +196,61 @@ public class CocktailDaoImpl implements CocktailDao {
         }
 
         return ingredients;
+    }
+
+    @Override
+    public boolean saveCocktailWithIngredients(Cocktail cocktail, List<CocktailIngredient> ingredients) throws DaoException {
+        try (Connection connection = dataSource.getConnection()) {
+            connection.setAutoCommit(false);
+            try {
+                try (PreparedStatement preparedStatement = connection.prepareStatement(SQL_SAVE, Statement.RETURN_GENERATED_KEYS)) {
+                    preparedStatement.setString(1, cocktail.getName());
+                    preparedStatement.setString(2, cocktail.getDescription());
+                    preparedStatement.setString(3, cocktail.getStatus().name());
+                    preparedStatement.setLong(4, cocktail.getAuthor().getId());
+                    preparedStatement.setTimestamp(5, Timestamp.valueOf(cocktail.getCreatedAt()));
+                    preparedStatement.executeUpdate();
+                    try (ResultSet resultSet = preparedStatement.getGeneratedKeys()) {
+                        if (resultSet.next()) {
+                            cocktail.setId(resultSet.getLong(1));
+                        }
+                    }
+                }
+
+                for (CocktailIngredient cocktailIngredient : ingredients) {
+                    long ingredientId;
+                    try (PreparedStatement preparedStatement = connection.prepareStatement(
+                            "INSERT INTO ingredients (name, unit) VALUES (?, ?) ON DUPLICATE KEY UPDATE id=LAST_INSERT_ID(id)",
+                            PreparedStatement.RETURN_GENERATED_KEYS)) {
+                        preparedStatement.setString(1, cocktailIngredient.getIngredient().getName());
+                        preparedStatement.setString(2, cocktailIngredient.getIngredient().getUnit());
+                        preparedStatement.executeUpdate();
+                        try (ResultSet resultSet = preparedStatement.getGeneratedKeys()) {
+                            resultSet.next();
+                            ingredientId = resultSet.getLong(1);
+                        }
+                    }
+
+                    try (PreparedStatement preparedStatement = connection.prepareStatement(
+                            "INSERT INTO cocktail_ingredients (cocktail_id, ingredient_id, amount) VALUES (?, ?, ?)")) {
+                        preparedStatement.setLong(1, cocktail.getId());
+                        preparedStatement.setLong(2, ingredientId);
+                        preparedStatement.setDouble(3, cocktailIngredient.getAmount());
+                        preparedStatement.executeUpdate();
+                    }
+                }
+
+                connection.commit();
+                return true;
+            } catch (SQLException e) {
+                connection.rollback();
+                throw new DaoException(e);
+            } finally {
+                connection.setAutoCommit(true);
+            }
+        } catch (SQLException e) {
+            throw new DaoException(e);
+        }
     }
 
     private Cocktail mapCocktail(ResultSet resultSet) throws SQLException {

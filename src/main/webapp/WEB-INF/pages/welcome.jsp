@@ -60,7 +60,7 @@
 
         <!-- CLIENT -->
         <c:if test="${currentUser.role == 'CLIENT'}">
-            <form action="${pageContext.request.contextPath}/cocktail/add" method="get">
+            <form action="${pageContext.request.contextPath}/add" method="get">
                 <button class="button" type="submit">Offer a cocktail</button>
             </form>
             <form action="${pageContext.request.contextPath}/logout" method="post">
@@ -71,7 +71,7 @@
             <ul class="cocktail-list">
                 <c:forEach var="cocktail" items="${cocktailList}">
                     <li class="cocktail-item">
-                        <a href="${pageContext.request.contextPath}/cocktail/view?id=${cocktail.id}">
+                        <a href="${pageContext.request.contextPath}/view?id=${cocktail.id}">
                             <strong>${cocktail.name}</strong>
                         </a>
                         <span>${cocktail.description}</span>
@@ -83,10 +83,10 @@
 
         <!-- BARTENDER -->
         <c:if test="${currentUser.role == 'BARTENDER'}">
-            <form action="${pageContext.request.contextPath}/cocktail/add" method="get">
+            <form action="${pageContext.request.contextPath}/add" method="get">
                 <button class="button" type="submit">Add a cocktail</button>
             </form>
-            <form action="${pageContext.request.contextPath}/cocktail/approve" method="get">
+            <form action="${pageContext.request.contextPath}/approve" method="get">
                 <button class="button" type="submit">Approve cocktail</button>
             </form>
             <form action="${pageContext.request.contextPath}/logout" method="post">
@@ -96,7 +96,7 @@
             <ul class="cocktail-list">
                 <c:forEach var="cocktail" items="${cocktailList}">
                     <li class="cocktail-item">
-                        <a href="${pageContext.request.contextPath}/cocktail/view?id=${cocktail.id}">
+                        <a href="${pageContext.request.contextPath}/view?id=${cocktail.id}">
                             <strong>${cocktail.name}</strong>
                         </a>
                         <span>${cocktail.description}</span>
@@ -108,10 +108,10 @@
 
         <!-- ADMIN -->
         <c:if test="${currentUser.role == 'ADMIN'}">
-            <form action="${pageContext.request.contextPath}/cocktail/add" method="get">
+            <form action="${pageContext.request.contextPath}/add" method="get">
                 <button class="button" type="submit">Add a cocktail</button>
             </form>
-            <form action="${pageContext.request.contextPath}/cocktail/approve" method="get">
+            <form action="${pageContext.request.contextPath}/approve" method="get">
                 <button class="button" type="submit">Approve cocktail</button>
             </form>
             <form action="${pageContext.request.contextPath}/admin/users" method="get">
@@ -124,7 +124,7 @@
             <ul class="cocktail-list">
                 <c:forEach var="cocktail" items="${cocktailList}">
                     <li class="cocktail-item">
-                        <a href="${pageContext.request.contextPath}/cocktail/view?id=${cocktail.id}">
+                        <a href="${pageContext.request.contextPath}/view?id=${cocktail.id}">
                             <strong>${cocktail.name}</strong>
                         </a>
                         <span>${cocktail.description}</span>
