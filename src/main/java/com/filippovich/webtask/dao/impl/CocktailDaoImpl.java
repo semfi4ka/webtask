@@ -27,6 +27,13 @@ public class CocktailDaoImpl implements CocktailDao {
             """;
     public static final String SQL_DELETE = "DELETE FROM cocktails WHERE id=?";
     public static final String SQL_FIND_BY_STATUS = "SELECT * FROM cocktails WHERE status=?";
+    public static final String SQL_FIND_AUTHOR_NAME_BY_ID = "SELECT username FROM users WHERE id = ?";
+    public static final String SQL_FIND_INGREDIENTS_BY_COCKTAIL_ID = """
+    SELECT i.name, ci.amount, i.unit
+    FROM cocktail_ingredients ci
+    JOIN ingredients i ON ci.ingredient_id = i.id
+    WHERE ci.cocktail_id = ?
+""";
     private final DataSource dataSource;
 
     public CocktailDaoImpl(DataSource dataSource) {
@@ -148,6 +155,46 @@ public class CocktailDaoImpl implements CocktailDao {
         }
 
         return list;
+    }
+    @Override
+    public String findAuthorNameById(long authorId) throws DaoException {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement(SQL_FIND_AUTHOR_NAME_BY_ID)) {
+
+            ps.setLong(1, authorId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("username");
+                }
+            }
+
+        } catch (SQLException e) {
+            throw new DaoException(e);
+        }
+        return "Unknown";
+    }
+    @Override
+    public List<String> findIngredientsByCocktailId(long cocktailId) throws DaoException {
+
+        List<String> ingredients = new ArrayList<>();
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement(SQL_FIND_INGREDIENTS_BY_COCKTAIL_ID)) {
+
+            ps.setLong(1, cocktailId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String ingredient = rs.getString("name") + " - " +
+                            rs.getDouble("amount") + " " +
+                            rs.getString("unit");
+                    ingredients.add(ingredient);
+                }
+            }
+
+        } catch (SQLException e) {
+            throw new DaoException(e);
+        }
+
+        return ingredients;
     }
 
     private Cocktail mapCocktail(ResultSet resultSet) throws SQLException {

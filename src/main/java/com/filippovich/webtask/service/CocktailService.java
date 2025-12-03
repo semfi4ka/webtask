@@ -18,4 +18,10 @@ public interface CocktailService {
     boolean updateCocktail(Cocktail cocktail) throws DaoException;
 
     boolean deleteCocktail(long id);
+
+    boolean addCocktailByRole(Cocktail cocktail, String role) throws DaoException;
+
+    String getAuthorNameById(long authorId) throws DaoException;
+
+    List<String> getIngredientsByCocktailId(long cocktailId) throws DaoException;
 }

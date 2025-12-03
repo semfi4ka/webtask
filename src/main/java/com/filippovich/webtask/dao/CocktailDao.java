@@ -11,5 +11,7 @@ public interface CocktailDao {
     boolean save(Cocktail cocktail)  throws DaoException;
     boolean update(Cocktail cocktail) throws DaoException;
     boolean delete(long id) throws DaoException;
+    List<String> findIngredientsByCocktailId(long cocktailId) throws DaoException;
+    String findAuthorNameById(long authorId) throws DaoException;
     List<Cocktail> findByStatus(String status) throws DaoException;
 }

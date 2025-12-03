@@ -3,6 +3,7 @@ package com.filippovich.webtask.service.impl;
 import com.filippovich.webtask.dao.impl.CocktailDaoImpl;
 import com.filippovich.webtask.exception.DaoException;
 import com.filippovich.webtask.model.Cocktail;
+import com.filippovich.webtask.model.CocktailStatus;
 import com.filippovich.webtask.service.CocktailService;
 
 import javax.sql.DataSource;
@@ -50,4 +51,32 @@ public class CocktailServiceImpl implements CocktailService {
             throw new RuntimeException(e);
         }
     }
+
+    @Override
+    public boolean addCocktailByRole(Cocktail cocktail, String role) throws DaoException {
+        switch (role) {
+            case "CLIENT":
+                cocktail.setStatus(CocktailStatus.MODERATION);
+                break;
+            case "BARTENDER":
+            case "ADMIN":
+                cocktail.setStatus(CocktailStatus.APPROVED);
+                break;
+            default:
+                cocktail.setStatus(CocktailStatus.DRAFT);
+        }
+        return cocktailDao.save(cocktail);
+    }
+
+    @Override
+    public String getAuthorNameById(long authorId) throws DaoException {
+        return cocktailDao.findAuthorNameById(authorId);
+    }
+
+    @Override
+    public List<String> getIngredientsByCocktailId(long cocktailId) throws DaoException {
+        return cocktailDao.findIngredientsByCocktailId(cocktailId);
+    }
+
+
 }
