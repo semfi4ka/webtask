@@ -27,7 +27,7 @@ public class UserController extends HttpServlet {
     private UserServiceImpl userService;
 
     @Override
-    public void init() throws ServletException {
+    public void init() {
         userService = new UserServiceImpl(new UserDaoImpl());
     }
 
