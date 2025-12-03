@@ -71,11 +71,14 @@
             <ul class="cocktail-list">
                 <c:forEach var="cocktail" items="${cocktailList}">
                     <li class="cocktail-item">
-                        <strong>${cocktail.name}</strong>
+                        <a href="${pageContext.request.contextPath}/cocktail/view?id=${cocktail.id}">
+                            <strong>${cocktail.name}</strong>
+                        </a>
                         <span>${cocktail.description}</span>
                     </li>
                 </c:forEach>
             </ul>
+
         </c:if>
 
         <!-- BARTENDER -->
@@ -93,11 +96,14 @@
             <ul class="cocktail-list">
                 <c:forEach var="cocktail" items="${cocktailList}">
                     <li class="cocktail-item">
-                        <strong>${cocktail.name}</strong>
+                        <a href="${pageContext.request.contextPath}/cocktail/view?id=${cocktail.id}">
+                            <strong>${cocktail.name}</strong>
+                        </a>
                         <span>${cocktail.description}</span>
                     </li>
                 </c:forEach>
             </ul>
+
         </c:if>
 
         <!-- ADMIN -->
@@ -118,11 +124,14 @@
             <ul class="cocktail-list">
                 <c:forEach var="cocktail" items="${cocktailList}">
                     <li class="cocktail-item">
-                        <strong>${cocktail.name}</strong>
+                        <a href="${pageContext.request.contextPath}/cocktail/view?id=${cocktail.id}">
+                            <strong>${cocktail.name}</strong>
+                        </a>
                         <span>${cocktail.description}</span>
                     </li>
                 </c:forEach>
             </ul>
+
         </c:if>
 
     </div>
