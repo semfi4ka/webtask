@@ -20,7 +20,7 @@ public class DatabaseConfig {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
         } catch (ClassNotFoundException e) {
-            throw new RuntimeException("MySQL JDBC Driver not found", e);
+            throw new ExceptionInInitializerError(e);
         }
 
         HikariConfig config = new HikariConfig();
