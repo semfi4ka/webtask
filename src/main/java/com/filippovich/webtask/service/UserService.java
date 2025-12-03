@@ -1,13 +1,14 @@
 package com.filippovich.webtask.service;
 
 import com.filippovich.webtask.exception.DaoException;
+import com.filippovich.webtask.exception.ServiceException;
 import com.filippovich.webtask.model.User;
 import com.filippovich.webtask.util.PasswordEncoder;
 
 import java.util.Optional;
 
 public interface UserService {
-    Optional<User> registerUser(String username, String email, String password) throws DaoException;
+    Optional<User> registerUser(String username, String email, String password) throws DaoException, ServiceException;
 
     Optional<User> loginUser(String email, String password) throws DaoException;
 

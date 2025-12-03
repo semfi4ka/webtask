@@ -2,6 +2,7 @@ package com.filippovich.webtask.service.impl;
 
 import com.filippovich.webtask.dao.UserDao;
 import com.filippovich.webtask.exception.DaoException;
+import com.filippovich.webtask.exception.ServiceException;
 import com.filippovich.webtask.model.User;
 import com.filippovich.webtask.model.UserRole;
 import com.filippovich.webtask.service.UserService;
@@ -18,7 +19,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Optional<User> registerUser(String username, String email, String password) throws DaoException {
+    public Optional<User> registerUser(String username, String email, String password) throws DaoException, ServiceException {
         Optional<User> existingUser = userDao.findByEmail(email);
         if (existingUser.isPresent()) {
             return Optional.empty();
@@ -37,8 +38,8 @@ public class UserServiceImpl implements UserService {
                 return Optional.empty();
             }
         }
-        catch (Exception e) {
-            throw new DaoException(e);
+        catch (DaoException e) {
+            throw new ServiceException(e);
         }
 
         return Optional.of(newUser);
