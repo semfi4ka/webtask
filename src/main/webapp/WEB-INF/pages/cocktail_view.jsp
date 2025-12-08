@@ -5,6 +5,7 @@
 <head>
     <title>Cocktail Details</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
+
     <style>
         .cocktail-container {
             width: 600px;
@@ -13,15 +14,6 @@
             padding: 30px;
             border-radius: 8px;
             box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
-        }
-
-        .cocktail-container h2 {
-            text-align: center;
-            margin-bottom: 10px;
-        }
-
-        .cocktail-info {
-            margin: 20px 0;
         }
 
         .ingredients-list {
@@ -34,9 +26,23 @@
             border-bottom: 1px solid #eee;
         }
 
-        .button {
-            margin: 10px 0;
-            display: inline-block;
+        /* Контейнер для кнопок */
+        .button-row {
+            display: flex;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        /* Back — растягивается */
+        .button-back {
+            flex: 1;
+            margin-right: 10px;
+        }
+
+        /* Delete — маленькая */
+        .button-delete {
+            width: 100px;
+            padding: 10px;
         }
     </style>
 </head>
@@ -46,21 +52,40 @@
 
     <h2>${cocktail.name}</h2>
 
-    <div class="cocktail-info">
-        <p><strong>Description:</strong> ${cocktail.description}</p>
-        <p><strong>Author:</strong> ${authorName}</p>
-        <p><strong>Created at:</strong> ${cocktail.createdAt}</p>
-        <h3>Ingredients:</h3>
-        <ul class="ingredients-list">
-            <c:forEach var="ingredient" items="${ingredients}">
-                <li>${ingredient}</li>
-            </c:forEach>
-        </ul>
-    </div>
+    <p><strong>Description:</strong> ${cocktail.description}</p>
+    <p><strong>Author:</strong> ${authorName}</p>
+    <p><strong>Created at:</strong> ${cocktail.createdAt}</p>
 
-    <form action="${pageContext.request.contextPath}/welcome" method="get">
-        <button class="button" type="submit">Back</button>
-    </form>
+    <h3>Ingredients:</h3>
+    <ul class="ingredients-list">
+        <c:forEach var="ingredient" items="${ingredients}">
+            <li>${ingredient}</li>
+        </c:forEach>
+    </ul>
+
+    <!-- Кнопки -->
+    <div class="button-row">
+
+        <!-- Back -->
+        <a href="${pageContext.request.contextPath}/welcome"
+           class="button button-back">
+            Back
+        </a>
+
+        <!-- Delete только для ADMIN -->
+        <c:if test="${currentUser.role == 'ADMIN'}">
+            <form action="${pageContext.request.contextPath}/delete"
+                  method="post" style="margin:0;">
+                <input type="hidden" name="id" value="${cocktail.id}">
+                <button type="submit"
+                        class="button danger button-delete"
+                        onclick="return confirm('Delete cocktail?');">
+                    Delete
+                </button>
+            </form>
+        </c:if>
+
+    </div>
 
 </div>
 

@@ -10,6 +10,7 @@ public class User implements Serializable {
     private String passwordHash;
     private UserRole role;
     private LocalDateTime createdAt;
+    private int cocktailCount;
 
     public User() {
     }
@@ -61,4 +62,8 @@ public class User implements Serializable {
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
+
+    public int getCocktailCount() { return cocktailCount; }
+
+    public void setCocktailCount(int cocktailCount) { this.cocktailCount = cocktailCount; }
 }

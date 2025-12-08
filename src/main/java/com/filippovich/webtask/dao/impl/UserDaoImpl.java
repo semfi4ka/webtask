@@ -1,6 +1,6 @@
 package com.filippovich.webtask.dao.impl;
 
-import com.filippovich.webtask.connection.DatabaseConfig;
+import com.filippovich.webtask.connection.ConnectionDataSource;
 import com.filippovich.webtask.dao.UserDao;
 import com.filippovich.webtask.exception.DaoException;
 import com.filippovich.webtask.model.User;
@@ -15,15 +15,35 @@ import java.util.Optional;
 public class UserDaoImpl implements UserDao {
 
     private final DataSource dataSource;
-    private final String SQL_FIND_BY_ID = "SELECT * FROM users WHERE id = ?";
-    private final String SQL_FIND_BY_EMAIL = "SELECT * FROM users WHERE email = ?";
-    private final String SQL_FIND_ALL = "SELECT * FROM users";
+    private final String SQL_FIND_BY_ID = """
+        SELECT id, username, email, password, role, created_at
+        FROM users
+        WHERE id = ?
+""";
+
+    private final String SQL_FIND_BY_EMAIL = """
+        SELECT id, username, email, password, role, created_at
+        FROM users
+        WHERE email = ?
+""";
+
+    private final String SQL_FIND_ALL = """
+        SELECT id, username, email, password, role, created_at
+        FROM users
+""";
+
+    private final String SQL_AUTHENTICATION = """
+        SELECT id, username, email, password, role, created_at
+        FROM users
+        WHERE email = ? AND password = ?
+""";
+
+    public static final String SQL_COUNT_COCKTAILS = "SELECT COUNT(*) FROM cocktails WHERE author_id = ?";
     private final String SQL_SAVE = "INSERT INTO users (username, email, password, role, created_at) VALUES (?, ?, ?, ?, ?)";
     private final String SQL_UPDATE = "UPDATE users SET username=?, email=?, password=?, role=? WHERE id=?";
     private final String SQL_DELETE = "DELETE FROM users WHERE id = ?";
-    private final String SQL_AUTHENTICATION = "SELECT * FROM users WHERE email = ? AND password = ?";
     public UserDaoImpl() {
-        this.dataSource = DatabaseConfig.getDataSource();
+        this.dataSource = ConnectionDataSource.getDataSource();
     }
 
     @Override
@@ -148,7 +168,7 @@ public class UserDaoImpl implements UserDao {
 
     @Override
     public Optional<User> authentication(String email, String passwordHash) throws DaoException {
-        try (Connection connection = DatabaseConfig.getDataSource().getConnection();
+        try (Connection connection = ConnectionDataSource.getDataSource().getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(SQL_AUTHENTICATION)) {
 
             preparedStatement.setString(1, email);
@@ -166,6 +186,23 @@ public class UserDaoImpl implements UserDao {
 
         return Optional.empty();
     }
+
+    @Override
+    public int countCocktailsByUserId(long userId) throws DaoException {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement(SQL_COUNT_COCKTAILS)) {
+            ps.setLong(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        } catch (SQLException e) {
+            throw new DaoException(e);
+        }
+        return 0;
+    }
+
 
     private User mapUser(ResultSet rs) throws SQLException {
         User user = new User();

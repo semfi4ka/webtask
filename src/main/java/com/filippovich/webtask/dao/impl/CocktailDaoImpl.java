@@ -15,10 +15,32 @@ import java.util.Optional;
 
 public class CocktailDaoImpl implements CocktailDao {
 
+    private static final String SQL_FIND_BY_ID = """
+        SELECT id, name, description, status, author_id, created_at
+        FROM cocktails
+        WHERE id = ?
+""";
+
+    private static final String SQL_FIND_ALL = """
+        SELECT id, name, description, status, author_id, created_at
+        FROM cocktails
+""";
+
+    private static final String SQL_FIND_BY_STATUS = """
+        SELECT id, name, description, status, author_id, created_at
+        FROM cocktails
+        WHERE status = ?
+""";
+
+    private static final String SQL_FIND_AUTHOR_NAME_BY_ID = """
+        SELECT username
+        FROM users
+        WHERE id = ?
+""";
+
+    public static final String SQL_DELETE_INGREDIENTS = "DELETE FROM cocktail_ingredients WHERE cocktail_id = ?";
     private final DataSource dataSource;
 
-    private static final String SQL_FIND_BY_ID = "SELECT * FROM cocktails WHERE id = ?";
-    private static final String SQL_FIND_ALL = "SELECT * FROM cocktails";
     private static final String SQL_SAVE = """
             INSERT INTO cocktails (name, description, status, author_id, created_at)
             VALUES (?, ?, ?, ?, ?)
@@ -29,8 +51,6 @@ public class CocktailDaoImpl implements CocktailDao {
             WHERE id=?
             """;
     private static final String SQL_DELETE = "DELETE FROM cocktails WHERE id=?";
-    private static final String SQL_FIND_BY_STATUS = "SELECT * FROM cocktails WHERE status=?";
-    private static final String SQL_FIND_AUTHOR_NAME_BY_ID = "SELECT username FROM users WHERE id = ?";
     private static final String SQL_FIND_INGREDIENTS_BY_COCKTAIL_ID = """
             SELECT i.name, ci.amount, i.unit
             FROM cocktail_ingredients ci
@@ -135,16 +155,24 @@ public class CocktailDaoImpl implements CocktailDao {
 
     @Override
     public boolean delete(long id) throws DaoException {
-        try (Connection connection = dataSource.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(SQL_DELETE)) {
 
-            preparedStatement.setLong(1, id);
-            return preparedStatement.executeUpdate() > 0;
+        try (Connection connection = dataSource.getConnection()) {
+
+            try (PreparedStatement stmtIngredients = connection.prepareStatement(SQL_DELETE_INGREDIENTS)) {
+                stmtIngredients.setLong(1, id);
+                stmtIngredients.executeUpdate();
+            }
+
+            try (PreparedStatement stmtCocktail = connection.prepareStatement(SQL_DELETE)) {
+                stmtCocktail.setLong(1, id);
+                return stmtCocktail.executeUpdate() > 0;
+            }
 
         } catch (SQLException e) {
             throw new DaoException(e);
         }
     }
+
 
     @Override
     public List<Cocktail> findByStatus(String status) throws DaoException {

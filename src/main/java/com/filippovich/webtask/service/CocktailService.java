@@ -9,19 +9,19 @@ import java.util.List;
 import java.util.Optional;
 
 public interface CocktailService {
-    List<Cocktail> getAllCocktails() throws DaoException;
+    List<Cocktail> getAllCocktails() throws ServiceException;
 
-    List<Cocktail> getCocktailsByStatus(String status) throws DaoException;
+    List<Cocktail> getCocktailsByStatus(String status) throws ServiceException;
 
-    Optional<Cocktail> getCocktailById(long id) throws DaoException;
+    Optional<Cocktail> getCocktailById(long id) throws ServiceException;
 
-    boolean updateCocktail(Cocktail cocktail) throws DaoException;
+    boolean updateCocktail(Cocktail cocktail) throws ServiceException;
 
     boolean deleteCocktail(long id) throws ServiceException;
 
-    String getAuthorNameById(long authorId) throws DaoException;
+    String getAuthorNameById(long authorId) throws ServiceException;
 
-    List<String> getIngredientsByCocktailId(long cocktailId) throws DaoException;
+    List<String> getIngredientsByCocktailId(long cocktailId) throws ServiceException;
 
-    boolean addCocktailWithIngredients(Cocktail cocktail, List<CocktailIngredient> ingredients, String role) throws DaoException;
+    boolean addCocktailWithIngredients(Cocktail cocktail, List<CocktailIngredient> ingredients, String role) throws ServiceException;
 }

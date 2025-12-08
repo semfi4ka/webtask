@@ -5,15 +5,19 @@ import com.filippovich.webtask.exception.ServiceException;
 import com.filippovich.webtask.model.User;
 import com.filippovich.webtask.util.PasswordEncoder;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UserService {
-    Optional<User> registerUser(String username, String email, String password) throws DaoException, ServiceException;
+    Optional<User> registerUser(String username, String email, String password) throws ServiceException;
 
-    Optional<User> loginUser(String email, String password) throws DaoException;
+    Optional<User> loginUser(String email, String password) throws ServiceException;
 
-    default String hashPassword(String password) {
-        PasswordEncoder passwordEncoder = new PasswordEncoder();
-        return passwordEncoder.hash(password);
-    }
+    boolean updateUser(User user) throws ServiceException;
+
+    List<User> getAllUsers() throws ServiceException;
+
+    User getUserById(long id) throws ServiceException;
+
+    int getCocktailCountByUser(User user) throws ServiceException;
 }

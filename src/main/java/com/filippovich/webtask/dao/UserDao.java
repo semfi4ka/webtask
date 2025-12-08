@@ -13,4 +13,5 @@ public interface UserDao {
     boolean update(User user)   throws DaoException;
     boolean delete(long id)   throws DaoException;
     Optional<User> authentication(String email, String passwordHash)  throws DaoException;
+    int countCocktailsByUserId(long userId) throws DaoException;
 }

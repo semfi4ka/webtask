@@ -12,9 +12,22 @@ import java.util.Optional;
 
 public class IngredientDaoImpl implements IngredientDao {
 
-    public static final String SQL_FIND_BY_ID = "SELECT * FROM ingredients WHERE id=?";
-    public static final String SQL_FIND_BY_NAME = "SELECT * FROM ingredients WHERE name=?";
-    public static final String SQL_FIND_ALL = "SELECT * FROM ingredients";
+    public static final String SQL_FIND_BY_ID = """
+        SELECT id, name, unit
+        FROM ingredients
+        WHERE id = ?
+""";
+
+    public static final String SQL_FIND_BY_NAME = """
+        SELECT id, name, unit
+        FROM ingredients
+        WHERE name = ?
+""";
+
+    public static final String SQL_FIND_ALL = """
+        SELECT id, name, unit
+        FROM ingredients
+""";
     public static final String SQL_SAVE = "INSERT INTO ingredients (name, unit) VALUES (?, ?)";
     public static final String SQL_UPDATE = "UPDATE ingredients SET name=?, unit=? WHERE id=?";
     public static final String SQL_DELETE = "DELETE FROM ingredients WHERE id=?";
