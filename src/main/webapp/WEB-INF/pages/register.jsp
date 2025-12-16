@@ -11,17 +11,6 @@
 
     <h2>Registration</h2>
 
-    <%
-        String message = (String) request.getAttribute("message");
-        boolean success = message != null && message.contains("successful");
-    %>
-
-    <% if (message != null) { %>
-    <div class="message <%= success ? "success" : "error" %>">
-        <%= message %>
-    </div>
-    <% } %>
-
     <form action="${pageContext.request.contextPath}/register" method="post">
 
         <input type="text" name="username" placeholder="Username" required>

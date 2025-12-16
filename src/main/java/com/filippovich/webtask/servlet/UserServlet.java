@@ -22,11 +22,11 @@ public class UserServlet extends HttpServlet {
 
     public static final String LOGIN_PAGE = "WEB-INF/pages/login.jsp";
     public static final String REGISTER_PAGE = "WEB-INF/pages/register.jsp";
-    public static final String LOGIN_SERVLET = "/login";
-    public static final String REGISTER_SERVLET = "/register";
-    public static final String USERNAME = "username";
-    public static final String EMAIL = "email";
-    public static final String PASSWORD = "password";
+    public static final String LOGIN_SERVLET_ACTION = "/login";
+    public static final String REGISTER_SERVLET_ACTION = "/register";
+    public static final String USERNAME_PARAMETER = "username";
+    public static final String EMAIL_PARAMETER = "email";
+    public static final String PASSWORD_PARAMETER = "password";
     public static final String WELCOME_PAGE = "welcome";
     public static final String MESSAGE_ATTRIBUTE = "message";
     public static final String CURRENT_USER_ATTRIBUTE = "currentUser";
@@ -42,7 +42,7 @@ public class UserServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String path = req.getServletPath();
-        if (LOGIN_SERVLET.equals(path)) {
+        if (LOGIN_SERVLET_ACTION.equals(path)) {
             req.getRequestDispatcher(LOGIN_PAGE).forward(req, resp);
         } else {
             req.getRequestDispatcher(REGISTER_PAGE).forward(req, resp);
@@ -54,9 +54,9 @@ public class UserServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException {
         String path = req.getServletPath();
         try {
-            if (REGISTER_SERVLET.equals(path)) {
+            if (REGISTER_SERVLET_ACTION.equals(path)) {
                 handleRegister(req, resp);
-            } else if (LOGIN_SERVLET.equals(path)) {
+            } else if (LOGIN_SERVLET_ACTION.equals(path)) {
                 handleLogin(req, resp);
             }
         } catch (IOException e) {
@@ -66,9 +66,9 @@ public class UserServlet extends HttpServlet {
     }
 
     private void handleRegister(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String username = req.getParameter(USERNAME);
-        String email = req.getParameter(EMAIL);
-        String password = req.getParameter(PASSWORD);
+        String username = req.getParameter(USERNAME_PARAMETER);
+        String email = req.getParameter(EMAIL_PARAMETER);
+        String password = req.getParameter(PASSWORD_PARAMETER);
 
         try {
             Optional<User> registeredUser = userService.registerUser(username, email, password);
@@ -87,8 +87,8 @@ public class UserServlet extends HttpServlet {
     }
 
     private void handleLogin(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String email = req.getParameter(EMAIL);
-        String password = req.getParameter(PASSWORD);
+        String email = req.getParameter(EMAIL_PARAMETER);
+        String password = req.getParameter(PASSWORD_PARAMETER);
 
         try {
             Optional<User> userOpt = userService.loginUser(email, password);
